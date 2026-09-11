@@ -478,6 +478,75 @@ svg { display: block; }
 .tl-card .chev { margin-left: 2px; color: var(--pink); }
 .workout-meta { font-size: 12px; font-weight: 600; color: var(--pink); margin-top: 3px; }
 
+/* ---------- приёмы пищи в таймлайне ---------- */
+.tl-item.meal .tl-card {
+  background: linear-gradient(135deg, var(--green-soft), var(--peach-soft)), var(--card);
+  border-color: rgba(134, 185, 152, 0.35); cursor: pointer;
+}
+.tl-item.meal .tl-card:active { transform: scale(0.98); }
+.tl-item.meal .kind-icon.food { background: linear-gradient(145deg, var(--green), var(--green-2)); color: #fff; box-shadow: 0 3px 8px rgba(110,168,134,0.35); }
+.tl-item.meal .tl-card .chev { color: var(--green-2); }
+.meal-meta { font-size: 12px; margin-top: 4px; color: var(--green-2); font-weight: 600; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.meal-meta .pick { color: var(--label-2); font-weight: 500; font-style: italic; font-family: var(--serif); font-size: 13px; }
+.meal-meta .ingr {
+  background: var(--card); border: 1px solid rgba(134,185,152,0.4); color: var(--green-2);
+  border-radius: 999px; padding: 1px 8px; font-size: 11px; font-weight: 600;
+}
+.tl-item.done .meal-meta .ingr { opacity: 0.7; }
+
+/* ---------- экран рациона ---------- */
+.tag-meal { background: var(--green-soft); color: var(--green-2); }
+.tag-meal::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+.meal-chosen {
+  background: linear-gradient(135deg, var(--green-soft), var(--peach-soft)), var(--card);
+  border: 1px solid rgba(134,185,152,0.35); border-radius: 20px; padding: 14px 16px; box-shadow: var(--shadow);
+  margin: 4px 0 4px;
+}
+.meal-chosen-label { font-family: var(--serif); font-style: italic; font-size: 14px; color: var(--green-2); }
+.meal-chosen-text { font-family: var(--serif); font-size: 21px; font-weight: 600; line-height: 1.25; margin-top: 3px; letter-spacing: -0.2px; }
+.meal-chosen.empty .meal-chosen-text { color: var(--label-3); font-weight: 500; font-style: italic; font-size: 18px; }
+.meal-chosen-actions { display: flex; gap: 8px; margin-top: 12px; }
+.mini-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: 999px; font-size: 14px; font-weight: 600;
+  background: linear-gradient(135deg, var(--green), var(--green-2)); color: #fff;
+  box-shadow: 0 4px 12px rgba(110,168,134,0.3);
+  transition: transform 0.18s var(--ease-spring), opacity 0.2s;
+}
+.mini-btn:active { transform: scale(0.94); }
+.mini-btn.ghost { background: var(--card); color: var(--label-2); border: 1px solid var(--separator); box-shadow: none; }
+.meal-options { display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; }
+.meal-opt {
+  background: var(--card); border-radius: 18px; box-shadow: var(--shadow); border: 1px solid var(--separator);
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px 12px 12px;
+  transition: transform 0.2s var(--ease-spring), border-color 0.25s, background 0.25s;
+  animation: rise 0.4s var(--ease-ios) both; cursor: pointer;
+}
+.meal-opt:nth-child(1) { animation-delay: 0.02s; } .meal-opt:nth-child(2) { animation-delay: 0.05s; }
+.meal-opt:nth-child(3) { animation-delay: 0.08s; } .meal-opt:nth-child(4) { animation-delay: 0.11s; }
+.meal-opt:nth-child(5) { animation-delay: 0.14s; } .meal-opt:nth-child(6) { animation-delay: 0.17s; }
+.meal-opt:nth-child(7) { animation-delay: 0.20s; } .meal-opt:nth-child(n+8) { animation-delay: 0.23s; }
+.meal-opt:active { transform: scale(0.98); }
+.meal-opt .check { border-color: var(--green); }
+.meal-opt.selected { border-color: var(--green); background: linear-gradient(135deg, var(--green-soft), var(--card) 60%); }
+.meal-opt.selected .check {
+  background: linear-gradient(145deg, var(--green) 0%, var(--green-2) 100%); border-color: var(--green-2);
+  box-shadow: 0 3px 8px rgba(110,168,134,0.35); animation: pop 0.38s var(--ease-spring);
+}
+.meal-opt.selected .check path { transform: scale(1); }
+.meal-opt .ex-num { width: 18px; }
+.meal-body { flex: 1; min-width: 0; }
+.meal-name { font-size: 16px; font-weight: 600; letter-spacing: -0.2px; line-height: 1.3; }
+.meal-ingr { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.meal-ingr span {
+  font-size: 14px; font-weight: 600; color: var(--green-2);
+  background: var(--green-soft); border-radius: 999px; padding: 4px 11px;
+}
+.meal-ingr span.plus { background: none; color: var(--label-3); padding: 2px 0; font-weight: 500; }
+.meal-opt.selected .meal-ingr span:not(.plus) { background: var(--green); color: #fff; }
+.big-btn.meal { background: linear-gradient(135deg, var(--green) 0%, var(--green-2) 100%); box-shadow: 0 8px 22px rgba(110,168,134,0.35); }
+.big-btn.meal.done { background: var(--card); color: var(--green-2); border: 1px solid var(--green); box-shadow: none; }
+
 /* ---------- упражнения ---------- */
 .exercises { display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; }
 .ex {

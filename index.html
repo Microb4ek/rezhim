@@ -170,6 +170,41 @@
   </div>
 </div>
 
+<!-- Экран рациона -->
+<div class="sheet" id="sheetMeal" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="sheet-panel">
+    <div class="grabber-zone"><svg class="bow" viewBox="0 0 48 26" aria-hidden="true"><path fill="currentColor" d="M24 13c-4-8-14-11-18-7-3 3 0 9 6 11 5 2 10 0 12-4Zm0 0c4-8 14-11 18-7 3 3 0 9-6 11-5 2-10 0-12-4Z"/><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" d="M20 14l-5 10m13-10l5 10"/><circle cx="24" cy="13" r="3.6" fill="#fff" stroke="currentColor" stroke-width="1.5"/></svg></div>
+    <header class="sheet-head">
+      <div class="sheet-titles">
+        <div class="sheet-eyebrow" id="mealEyebrow">Рацион</div>
+        <h2 class="sheet-title" id="mealTitle">—</h2>
+        <div class="tags"><span class="tag tag-meal" id="mealTag">Рацион</span></div>
+      </div>
+      <button class="close-btn" data-close aria-label="Закрыть">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </header>
+    <div class="lace"></div>
+    <div class="sheet-body">
+      <div class="meal-chosen" id="mealChosen">
+        <div class="meal-chosen-label" id="mealChosenLabel">Сегодня на столе</div>
+        <div class="meal-chosen-text" id="mealChosenText">Вариант не выбран</div>
+        <div class="meal-chosen-actions">
+          <button class="mini-btn" id="mealRandom">
+            <svg viewBox="0 0 24 24" width="15" height="15"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M4 7h3.5c2 0 3 1 4 2.5l1 1.5c1 1.5 2 2.5 4 2.5H20M4 17h3.5c2 0 3-1 4-2.5M12.5 9.5c1-1.5 2-2.5 4-2.5H20M17 4l3 3-3 3M17 14l3 3-3 3"/></svg>
+            Случайно
+          </button>
+          <button class="mini-btn ghost" id="mealClear">Сбросить</button>
+        </div>
+      </div>
+      <div class="group-label" id="mealHint">Варианты</div>
+      <ul class="meal-options" id="mealOptions"></ul>
+      <button class="big-btn meal" id="mealDone">Отметить съеденным</button>
+      <div class="sheet-spacer"></div>
+    </div>
+  </div>
+</div>
+
 <!-- Настройки -->
 <div class="sheet" id="sheetSettings" aria-hidden="true" role="dialog" aria-modal="true">
   <div class="sheet-panel">

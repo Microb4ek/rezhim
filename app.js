@@ -3,7 +3,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '1.2.0';
+  const APP_VERSION = '1.3.0';
   const DAY_KEYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   const WEEKDAYS_RU = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
   const MONTHS_RU = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
@@ -20,7 +20,7 @@
   };
 
   /* ---------------- хранилище ---------------- */
-  const KEYS = { checks: 'tracker.checks', variants: 'tracker.variants', settings: 'tracker.settings' };
+  const KEYS = { checks: 'tracker.checks', variants: 'tracker.variants', settings: 'tracker.settings', meals: 'tracker.meals' };
   function load(key, fallback) {
     try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
     catch { return fallback; }
@@ -31,10 +31,12 @@
   const store = {
     checks: load(KEYS.checks, {}),      // { 'YYYY-MM-DD': { itemId: true } }
     variants: load(KEYS.variants, {}),  // { 'YYYY-MM-DD': { satEvening: true } }
+    meals: load(KEYS.meals, {}),        // { 'YYYY-MM-DD': { itemId: optionIndex } }
     settings: Object.assign({ theme: 'light', notify: false }, load(KEYS.settings, {})) // светлая — основная
   };
   const saveChecks = () => persist(KEYS.checks, store.checks);
   const saveVariants = () => persist(KEYS.variants, store.variants);
+  const saveMeals = () => persist(KEYS.meals, store.meals);
   const saveSettings = () => persist(KEYS.settings, store.settings);
 
   /* ---------------- даты ---------------- */
@@ -68,6 +70,28 @@
     return { done, total: items.length, ratio: items.length ? done / items.length : 0 };
   }
   const exId = (workoutId, i) => `w:${workoutId}:${i}`;
+
+  /* ---------------- рационы ---------------- */
+  const mealChoice = (dateK, itemId) => { const v = store.meals[dateK]?.[itemId]; return Number.isInteger(v) ? v : null; };
+  function setMealChoice(dateK, itemId, idx) {
+    if (!store.meals[dateK]) store.meals[dateK] = {};
+    if (idx === null) delete store.meals[dateK][itemId]; else store.meals[dateK][itemId] = idx;
+    if (Object.keys(store.meals[dateK]).length === 0) delete store.meals[dateK];
+    saveMeals();
+  }
+  // «овсянка + яблоко + 2 яйца» → массив ингредиентов; «лаваш с курицей» — одна метка
+  const mealParts = (text) => text.split(/\s\+\s/).map((s) => s.trim()).filter(Boolean);
+  const escapeHtml = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function mealMetaHtml(dateK, it) {
+    const m = window.MEALS[it.mealId];
+    if (!m) return '';
+    const idx = mealChoice(dateK, it.id);
+    const label = it.kind === 'study' ? 'Обед с собой' : 'Рацион';
+    if (idx === null || !m.options[idx]) {
+      return `<div class="meal-meta"><span class="pick">${label} · выбрать из ${m.options.length}</span></div>`;
+    }
+    return `<div class="meal-meta">${mealParts(m.options[idx]).map((p) => `<span class="ingr">${escapeHtml(p)}</span>`).join('')}</div>`;
+  }
   function workoutProgress(dateK, workoutId) {
     const w = window.WORKOUTS[workoutId];
     const total = w.exercises.length;
@@ -386,6 +410,7 @@
       li.className = `tl-item kind-${it.kind || 'plain'}`;
       li.dataset.id = it.id;
       if (it.workoutId) { li.classList.add('workout'); li.dataset.workout = it.workoutId; }
+      if (it.mealId && window.MEALS[it.mealId]) { li.classList.add('meal'); li.dataset.meal = it.mealId; }
       if (isChecked(dateK, it.id)) li.classList.add('done');
       if (it.id === nowId) li.classList.add('now');
       const timeHtml = `${it.time}${it.endTime ? `<small>–${it.endTime}</small>` : ''}`;
@@ -393,11 +418,14 @@
       if (it.workoutId) {
         const wp = workoutProgress(dateK, it.workoutId);
         meta = `<div class="workout-meta">${wp.total} ${plural(wp.total, 'упражнение', 'упражнения', 'упражнений')}${wp.done ? ` · ${wp.done} выполнено` : ''}</div>`;
+      } else if (li.dataset.meal) {
+        meta = mealMetaHtml(dateK, it);
       }
+      const opens = it.workoutId || li.dataset.meal;
       li.innerHTML = `
         <div class="tl-time">${timeHtml}</div>
         <button class="tl-check" aria-label="Отметить: ${it.title}" aria-pressed="${isChecked(dateK, it.id)}">${CHECK_SVG}</button>
-        <div class="tl-card" ${it.workoutId ? 'role="button" tabindex="0"' : ''}>
+        <div class="tl-card" ${opens ? 'role="button" tabindex="0"' : ''}>
           <div class="kind-icon ${it.kind || ''}">${ICONS[it.kind] || ICONS.free}</div>
           <div class="body">
             <span class="tl-title">${it.title}</span>
@@ -405,7 +433,7 @@
             ${meta}
           </div>
           ${it.id === nowId ? '<span class="now-pill">сейчас</span>' : ''}
-          ${it.workoutId ? CHEV_SVG : ''}
+          ${opens ? CHEV_SVG : ''}
         </div>`;
       frag.appendChild(li);
     });
@@ -444,12 +472,17 @@
     if (!li || !currentDate) return;
     if (e.target.closest('.tl-check')) { toggleItem(currentDate, li.dataset.id); return; }
     if (li.dataset.workout) { openWorkout(currentDate, li.dataset.workout, li.dataset.id); return; }
+    if (li.dataset.meal) { openMeal(currentDate, li.dataset.meal, li.dataset.id); return; }
     if (e.target.closest('.tl-card')) toggleItem(currentDate, li.dataset.id);
   });
   timelineEl.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
     const card = e.target.closest('.tl-card[role="button"]');
-    if (card) { e.preventDefault(); const li = card.closest('.tl-item'); openWorkout(currentDate, li.dataset.workout, li.dataset.id); }
+    if (!card) return;
+    e.preventDefault();
+    const li = card.closest('.tl-item');
+    if (li.dataset.workout) openWorkout(currentDate, li.dataset.workout, li.dataset.id);
+    else if (li.dataset.meal) openMeal(currentDate, li.dataset.meal, li.dataset.id);
   });
 
   $('satEvening').addEventListener('change', (e) => {
@@ -562,6 +595,123 @@
     setTimeout(() => closeSheet(sheetWorkout), 550);
   });
 
+  /* ---------------- экран рациона ---------------- */
+  const sheetMeal = $('sheetMeal');
+  const mealOptionsEl = $('mealOptions');
+  let currentMeal = null; // { dateK, mealId, itemId }
+
+  function renderMealChosen() {
+    const { dateK, mealId, itemId } = currentMeal;
+    const m = window.MEALS[mealId];
+    const idx = mealChoice(dateK, itemId);
+    const box = $('mealChosen');
+    const has = idx !== null && !!m.options[idx];
+    box.classList.toggle('empty', !has);
+    $('mealChosenLabel').textContent = dateK === todayKey() ? 'Сегодня на столе' : 'Выбрано на этот день';
+    $('mealChosenText').textContent = has ? m.options[idx] : 'Вариант ещё не выбран';
+    $('mealClear').hidden = !has;
+    mealOptionsEl.querySelectorAll('.meal-opt').forEach((li) => {
+      const on = Number(li.dataset.index) === idx;
+      li.classList.toggle('selected', on);
+      li.setAttribute('aria-checked', on);
+    });
+    const btn = $('mealDone');
+    const done = isChecked(dateK, itemId);
+    btn.classList.toggle('done', done);
+    btn.textContent = done ? 'Отмечено как съеденное' : 'Отметить съеденным';
+  }
+
+  function openMeal(dateK, mealId, itemId) {
+    const m = window.MEALS[mealId];
+    if (!m) return;
+    currentMeal = { dateK, mealId, itemId };
+    const item = itemsFor(dateK).find((it) => it.id === itemId);
+    $('mealEyebrow').textContent = item ? `${item.title} · ${item.time}` : 'Рацион';
+    $('mealTitle').textContent = m.title;
+    $('mealTag').textContent = `${m.options.length} ${plural(m.options.length, 'вариант', 'варианта', 'вариантов')}`;
+    $('mealHint').textContent = m.hint || 'Варианты';
+    const frag = document.createDocumentFragment();
+    m.options.forEach((opt, i) => {
+      const li = document.createElement('li');
+      li.className = 'meal-opt';
+      li.dataset.index = i;
+      li.setAttribute('role', 'radio');
+      li.tabIndex = 0;
+      const parts = mealParts(opt);
+      // составные варианты — метками-ингредиентами, цельные блюда — текстом
+      const body = parts.length > 1
+        ? `<div class="meal-ingr">${parts.map((p) => `<span>${escapeHtml(p)}</span>`).join('<span class="plus">+</span>')}</div>`
+        : `<div class="meal-name">${escapeHtml(cap(opt))}</div>`;
+      li.innerHTML = `${CHECK_SVG}<span class="ex-num">${i + 1}</span><div class="meal-body">${body}</div>`;
+      frag.appendChild(li);
+    });
+    mealOptionsEl.replaceChildren(frag);
+    renderMealChosen();
+    openSheet(sheetMeal);
+    haptic();
+  }
+
+  function syncMealItemInDay() {
+    const { dateK, itemId } = currentMeal;
+    const li = timelineEl.querySelector(`.tl-item[data-id="${CSS.escape(itemId)}"]`);
+    if (!li) return;
+    const it = itemsFor(dateK).find((x) => x.id === itemId);
+    const old = li.querySelector('.meal-meta');
+    if (old && it) old.outerHTML = mealMetaHtml(dateK, it);
+    const done = isChecked(dateK, itemId);
+    li.classList.toggle('done', done);
+    li.querySelector('.tl-check').setAttribute('aria-pressed', done);
+    renderDayProgress(dateK);
+  }
+
+  function chooseMeal(idx) {
+    const { dateK, itemId } = currentMeal;
+    const same = mealChoice(dateK, itemId) === idx;
+    setMealChoice(dateK, itemId, same ? null : idx);
+    renderMealChosen();
+    syncMealItemInDay();
+    haptic();
+  }
+  mealOptionsEl.addEventListener('click', (e) => {
+    const li = e.target.closest('.meal-opt');
+    if (li) chooseMeal(Number(li.dataset.index));
+  });
+  mealOptionsEl.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const li = e.target.closest('.meal-opt');
+    if (li) { e.preventDefault(); chooseMeal(Number(li.dataset.index)); }
+  });
+  $('mealRandom').addEventListener('click', () => {
+    const { dateK, mealId, itemId } = currentMeal;
+    const n = window.MEALS[mealId].options.length;
+    const cur = mealChoice(dateK, itemId);
+    let idx = Math.floor(Math.random() * n);
+    if (n > 1 && idx === cur) idx = (idx + 1) % n;
+    setMealChoice(dateK, itemId, idx);
+    renderMealChosen();
+    syncMealItemInDay();
+    haptic();
+    const el = mealOptionsEl.querySelector(`.meal-opt[data-index="${idx}"]`);
+    if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  });
+  $('mealClear').addEventListener('click', () => {
+    const { dateK, itemId } = currentMeal;
+    setMealChoice(dateK, itemId, null);
+    renderMealChosen();
+    syncMealItemInDay();
+    haptic();
+  });
+  $('mealDone').addEventListener('click', () => {
+    const { dateK, itemId } = currentMeal;
+    const val = !isChecked(dateK, itemId);
+    setChecked(dateK, itemId, val);
+    renderMealChosen();
+    syncMealItemInDay();
+    refreshAll(dateK);
+    haptic();
+    if (val) { toast('Приятного аппетита'); setTimeout(() => closeSheet(sheetMeal), 550); }
+  });
+
   /* ---------------- настройки ---------------- */
   const sheetSettings = $('sheetSettings');
   $('settingsBtn').addEventListener('click', () => { openSettings(); });
@@ -622,7 +772,7 @@
 
   // данные: экспорт / импорт / сброс
   $('exportBtn').addEventListener('click', async () => {
-    const payload = JSON.stringify({ app: 'tracker', version: APP_VERSION, exportedAt: new Date().toISOString(), checks: store.checks, variants: store.variants, settings: store.settings });
+    const payload = JSON.stringify({ app: 'tracker', version: APP_VERSION, exportedAt: new Date().toISOString(), checks: store.checks, variants: store.variants, meals: store.meals, settings: store.settings });
     try { await navigator.clipboard.writeText(payload); toast('Резервная копия скопирована'); }
     catch { window.prompt('Скопируйте текст резервной копии:', payload); }
   });
@@ -632,16 +782,16 @@
     try {
       const data = JSON.parse(raw);
       if (data.app !== 'tracker' || typeof data.checks !== 'object') throw new Error('bad');
-      store.checks = data.checks || {}; store.variants = data.variants || {};
+      store.checks = data.checks || {}; store.variants = data.variants || {}; store.meals = data.meals || {};
       if (data.settings) store.settings = Object.assign(store.settings, data.settings);
-      saveChecks(); saveVariants(); saveSettings(); applyTheme();
+      saveChecks(); saveVariants(); saveMeals(); saveSettings(); applyTheme();
       renderMonth(); refreshAll();
       toast('Данные восстановлены');
     } catch { toast('Не удалось прочитать копию'); }
   });
   $('resetBtn').addEventListener('click', () => {
     if (!window.confirm('Стереть все отметки о выполнении? Это нельзя отменить.')) return;
-    store.checks = {}; store.variants = {}; saveChecks(); saveVariants();
+    store.checks = {}; store.variants = {}; store.meals = {}; saveChecks(); saveVariants(); saveMeals();
     renderMonth(); refreshAll();
     toast('Отметки стёрты');
   });
