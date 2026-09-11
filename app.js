@@ -638,10 +638,8 @@
       li.setAttribute('role', 'radio');
       li.tabIndex = 0;
       const parts = mealParts(opt);
-      // составные варианты — метками-ингредиентами, цельные блюда — текстом
-      const body = parts.length > 1
-        ? `<div class="meal-ingr">${parts.map((p) => `<span>${escapeHtml(p)}</span>`).join('<span class="plus">+</span>')}</div>`
-        : `<div class="meal-name">${escapeHtml(cap(opt))}</div>`;
+      // все варианты — метками: ингредиенты через «+», цельное блюдо — одна метка
+      const body = `<div class="meal-ingr">${parts.map((p) => `<span>${escapeHtml(p)}</span>`).join('<span class="plus">+</span>')}</div>`;
       li.innerHTML = `${CHECK_SVG}<span class="ex-num">${i + 1}</span><div class="meal-body">${body}</div>`;
       frag.appendChild(li);
     });
