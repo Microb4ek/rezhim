@@ -3,7 +3,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '1.3.0';
+  const APP_VERSION = '1.4.0';
   const DAY_KEYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   const WEEKDAYS_RU = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
   const MONTHS_RU = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
@@ -82,6 +82,17 @@
   // «овсянка + яблоко + 2 яйца» → массив ингредиентов; «лаваш с курицей» — одна метка
   const mealParts = (text) => text.split(/\s\+\s/).map((s) => s.trim()).filter(Boolean);
   const escapeHtml = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  // ингредиент → ключ рецепта (null — готовить не нужно)
+  function recipeFor(part) {
+    for (const [re, key] of window.RECIPE_MATCH) if (re.test(part) && window.RECIPES[key]) return key;
+    return null;
+  }
+  // метка ингредиента; если есть рецепт — с кнопкой «!»
+  function ingrHtml(part, cls) {
+    const r = recipeFor(part);
+    const badge = r ? `<button class="rq" data-recipe="${r}" aria-label="Как готовить: ${escapeHtml(part)}">!</button>` : '';
+    return `<span class="${cls}${r ? ' has-recipe' : ''}">${escapeHtml(part)}${badge}</span>`;
+  }
   function mealMetaHtml(dateK, it) {
     const m = window.MEALS[it.mealId];
     if (!m) return '';
@@ -90,7 +101,7 @@
     if (idx === null || !m.options[idx]) {
       return `<div class="meal-meta"><span class="pick">${label} · выбрать из ${m.options.length}</span></div>`;
     }
-    return `<div class="meal-meta">${mealParts(m.options[idx]).map((p) => `<span class="ingr">${escapeHtml(p)}</span>`).join('')}</div>`;
+    return `<div class="meal-meta">${mealParts(m.options[idx]).map((p) => ingrHtml(p, 'ingr')).join('')}</div>`;
   }
   function workoutProgress(dateK, workoutId) {
     const w = window.WORKOUTS[workoutId];
@@ -468,6 +479,8 @@
   }
 
   timelineEl.addEventListener('click', (e) => {
+    const rq = e.target.closest('.rq');
+    if (rq) { e.stopPropagation(); openRecipe(rq.dataset.recipe); return; }
     const li = e.target.closest('.tl-item');
     if (!li || !currentDate) return;
     if (e.target.closest('.tl-check')) { toggleItem(currentDate, li.dataset.id); return; }
@@ -639,7 +652,7 @@
       li.tabIndex = 0;
       const parts = mealParts(opt);
       // все варианты — метками: ингредиенты через «+», цельное блюдо — одна метка
-      const body = `<div class="meal-ingr">${parts.map((p) => `<span>${escapeHtml(p)}</span>`).join('<span class="plus">+</span>')}</div>`;
+      const body = `<div class="meal-ingr">${parts.map((p) => ingrHtml(p, 'ing')).join('<span class="plus">+</span>')}</div>`;
       li.innerHTML = `${CHECK_SVG}<span class="ex-num">${i + 1}</span><div class="meal-body">${body}</div>`;
       frag.appendChild(li);
     });
@@ -671,6 +684,8 @@
     haptic();
   }
   mealOptionsEl.addEventListener('click', (e) => {
+    const rq = e.target.closest('.rq');
+    if (rq) { e.stopPropagation(); openRecipe(rq.dataset.recipe); return; }
     const li = e.target.closest('.meal-opt');
     if (li) chooseMeal(Number(li.dataset.index));
   });
@@ -709,6 +724,30 @@
     haptic();
     if (val) { toast('Приятного аппетита'); setTimeout(() => closeSheet(sheetMeal), 550); }
   });
+
+  /* ---------------- экран рецепта ---------------- */
+  const sheetRecipe = $('sheetRecipe');
+  function openRecipe(key) {
+    const r = window.RECIPES[key];
+    if (!r) return;
+    $('recipeTitle').textContent = r.title;
+    $('recipeTime').textContent = r.time || '';
+    const li = (arr, cls) => arr.map((s) => `<li>${escapeHtml(s)}</li>`).join('');
+    let html = r.intro ? `<p class="recipe-intro">${escapeHtml(r.intro)}</p>` : '';
+    if (r.methods?.length) {
+      html += `<div class="group-label">Способы и время</div><div class="recipe-methods">${r.methods.map((m) => `
+        <div class="recipe-method">
+          <div class="rm-time">${escapeHtml(m.time)}</div>
+          <div class="rm-body"><div class="rm-name">${escapeHtml(m.name)}</div>${m.note ? `<div class="rm-note">${escapeHtml(m.note)}</div>` : ''}</div>
+        </div>`).join('')}</div>`;
+    }
+    if (r.steps?.length) html += `<div class="group-label">Пошагово</div><ol class="recipe-steps">${li(r.steps)}</ol>`;
+    if (r.tips?.length) html += `<div class="group-label">Советы</div><ul class="recipe-tips">${li(r.tips)}</ul>`;
+    html += '<div class="sheet-spacer"></div>';
+    $('recipeBody').innerHTML = html;
+    openSheet(sheetRecipe);
+    haptic();
+  }
 
   /* ---------------- настройки ---------------- */
   const sheetSettings = $('sheetSettings');

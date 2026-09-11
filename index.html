@@ -205,6 +205,25 @@
   </div>
 </div>
 
+<!-- Экран рецепта -->
+<div class="sheet" id="sheetRecipe" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="sheet-panel">
+    <div class="grabber-zone"><svg class="bow" viewBox="0 0 48 26" aria-hidden="true"><path fill="currentColor" d="M24 13c-4-8-14-11-18-7-3 3 0 9 6 11 5 2 10 0 12-4Zm0 0c4-8 14-11 18-7 3 3 0 9-6 11-5 2-10 0-12-4Z"/><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" d="M20 14l-5 10m13-10l5 10"/><circle cx="24" cy="13" r="3.6" fill="#fff" stroke="currentColor" stroke-width="1.5"/></svg></div>
+    <header class="sheet-head">
+      <div class="sheet-titles">
+        <div class="sheet-eyebrow" style="text-transform:none">Как готовить</div>
+        <h2 class="sheet-title" id="recipeTitle">—</h2>
+        <div class="tags"><span class="tag tag-recipe" id="recipeTime">—</span></div>
+      </div>
+      <button class="close-btn" data-close aria-label="Закрыть">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </header>
+    <div class="lace"></div>
+    <div class="sheet-body" id="recipeBody"></div>
+  </div>
+</div>
+
 <!-- Настройки -->
 <div class="sheet" id="sheetSettings" aria-hidden="true" role="dialog" aria-modal="true">
   <div class="sheet-panel">
