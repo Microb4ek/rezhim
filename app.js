@@ -3,7 +3,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '1.1.0';
+  const APP_VERSION = '1.2.0';
   const DAY_KEYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   const WEEKDAYS_RU = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
   const MONTHS_RU = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
@@ -31,7 +31,7 @@
   const store = {
     checks: load(KEYS.checks, {}),      // { 'YYYY-MM-DD': { itemId: true } }
     variants: load(KEYS.variants, {}),  // { 'YYYY-MM-DD': { satEvening: true } }
-    settings: Object.assign({ theme: 'system', notify: false }, load(KEYS.settings, {}))
+    settings: Object.assign({ theme: 'light', notify: false }, load(KEYS.settings, {})) // светлая — основная
   };
   const saveChecks = () => persist(KEYS.checks, store.checks);
   const saveVariants = () => persist(KEYS.variants, store.variants);
@@ -139,7 +139,8 @@
     sleep: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 5h2v7h6V7h5a4 4 0 0 1 4 4v8h-2v-3H6v3H4V5Zm4 3a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z"/></svg>',
     free: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="m12 2 3 6.5 7 .8-5.2 4.8 1.4 7L12 17.6 5.8 21l1.4-7L2 9.3l7-.8L12 2Z"/></svg>'
   };
-  const CHECK_SVG = '<span class="check"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>';
+  // сердечко вместо галочки
+  const CHECK_SVG = '<span class="check"><svg viewBox="0 0 24 24"><path d="M12 21s-8.5-5.2-8.5-11.3A4.6 4.6 0 0 1 12 7.4a4.6 4.6 0 0 1 8.5 2.3C20.5 15.8 12 21 12 21Z"/></svg></span>';
   const CHEV_SVG = '<svg class="chev" viewBox="0 0 24 24" width="18" height="18"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>';
 
   /* ---------------- тема ---------------- */
@@ -149,9 +150,9 @@
     const t = store.settings.theme;
     if (t === 'system') document.documentElement.removeAttribute('data-theme');
     else document.documentElement.setAttribute('data-theme', t);
-    const forced = t === 'light' ? '#f2f2f7' : t === 'dark' ? '#000000' : null;
-    metaLight.content = forced || '#f2f2f7';
-    metaDark.content = forced || '#000000';
+    const forced = t === 'light' ? '#fbf4f6' : t === 'dark' ? '#1f171c' : null;
+    metaLight.content = forced || '#fbf4f6';
+    metaDark.content = forced || '#1f171c';
     document.querySelectorAll('#themeSeg button').forEach((b) => {
       const on = b.dataset.theme === t;
       b.classList.toggle('active', on);

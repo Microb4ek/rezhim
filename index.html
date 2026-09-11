@@ -6,8 +6,8 @@
   <title>Режим</title>
   <meta name="description" content="Личный календарь-трекер недельного расписания. Работает офлайн, данные только на устройстве.">
 
-  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f2f7">
-  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fbf4f6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1f171c">
 
   <!-- iOS PWA -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -42,6 +42,7 @@
       </div>
       <button class="pill-btn" id="todayBtn">Сегодня</button>
     </div>
+    <div class="lace"></div>
   </header>
 
   <main class="content">
@@ -60,6 +61,7 @@
     </section>
 
     <section class="today-card card pressable" id="todayCard" role="button" tabindex="0" aria-label="Открыть сегодня">
+      <svg class="deco" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-8.5-5.2-8.5-11.3A4.6 4.6 0 0 1 12 7.4a4.6 4.6 0 0 1 8.5 2.3C20.5 15.8 12 21 12 21Z"/></svg>
       <div class="today-ring">
         <svg viewBox="0 0 44 44" width="52" height="52">
           <circle class="ring-track" cx="22" cy="22" r="19"></circle>
@@ -106,7 +108,7 @@
 <!-- Экран дня -->
 <div class="sheet" id="sheetDay" aria-hidden="true" role="dialog" aria-modal="true">
   <div class="sheet-panel">
-    <div class="grabber-zone"><div class="grabber"></div></div>
+    <div class="grabber-zone"><svg class="bow" viewBox="0 0 48 26" aria-hidden="true"><path fill="currentColor" d="M24 13c-4-8-14-11-18-7-3 3 0 9 6 11 5 2 10 0 12-4Zm0 0c4-8 14-11 18-7 3 3 0 9-6 11-5 2-10 0-12-4Z"/><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" d="M20 14l-5 10m13-10l5 10"/><circle cx="24" cy="13" r="3.6" fill="#fff" stroke="currentColor" stroke-width="1.5"/></svg></div>
     <header class="sheet-head">
       <div class="sheet-titles">
         <div class="sheet-eyebrow" id="dayEyebrow">Понедельник</div>
@@ -117,6 +119,7 @@
         <svg viewBox="0 0 24 24" width="14" height="14"><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
     </header>
+    <div class="lace"></div>
     <div class="sheet-body">
       <div class="progress-block">
         <div class="progress-row">
@@ -141,7 +144,7 @@
 <!-- Экран тренировки -->
 <div class="sheet" id="sheetWorkout" aria-hidden="true" role="dialog" aria-modal="true">
   <div class="sheet-panel">
-    <div class="grabber-zone"><div class="grabber"></div></div>
+    <div class="grabber-zone"><svg class="bow" viewBox="0 0 48 26" aria-hidden="true"><path fill="currentColor" d="M24 13c-4-8-14-11-18-7-3 3 0 9 6 11 5 2 10 0 12-4Zm0 0c4-8 14-11 18-7 3 3 0 9-6 11-5 2-10 0-12-4Z"/><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" d="M20 14l-5 10m13-10l5 10"/><circle cx="24" cy="13" r="3.6" fill="#fff" stroke="currentColor" stroke-width="1.5"/></svg></div>
     <header class="sheet-head">
       <div class="sheet-titles">
         <div class="sheet-eyebrow" id="workoutEyebrow">Тренировка</div>
@@ -151,6 +154,7 @@
         <svg viewBox="0 0 24 24" width="14" height="14"><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
     </header>
+    <div class="lace"></div>
     <div class="sheet-body">
       <div class="progress-block">
         <div class="progress-row">
@@ -169,7 +173,7 @@
 <!-- Настройки -->
 <div class="sheet" id="sheetSettings" aria-hidden="true" role="dialog" aria-modal="true">
   <div class="sheet-panel">
-    <div class="grabber-zone"><div class="grabber"></div></div>
+    <div class="grabber-zone"><svg class="bow" viewBox="0 0 48 26" aria-hidden="true"><path fill="currentColor" d="M24 13c-4-8-14-11-18-7-3 3 0 9 6 11 5 2 10 0 12-4Zm0 0c4-8 14-11 18-7 3 3 0 9-6 11-5 2-10 0-12-4Z"/><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" d="M20 14l-5 10m13-10l5 10"/><circle cx="24" cy="13" r="3.6" fill="#fff" stroke="currentColor" stroke-width="1.5"/></svg></div>
     <header class="sheet-head">
       <div class="sheet-titles">
         <h2 class="sheet-title">Настройки</h2>
@@ -178,6 +182,7 @@
         <svg viewBox="0 0 24 24" width="14" height="14"><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
     </header>
+    <div class="lace"></div>
     <div class="sheet-body">
 
       <div class="group-label">Оформление</div>
