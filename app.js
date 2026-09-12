@@ -53,6 +53,9 @@
     const base = (window.SCHEDULE[dayKey] || []).map((it, i) => ({ ...it, id: `${dayKey}:${i}` }));
     if (dayKey === 'saturday' && store.variants[dateK]?.satEvening) {
       window.SATURDAY_EVENING.forEach((it, i) => base.push({ ...it, id: `sat-eve:${i}` }));
+      // ужин переносится после вечерней пары (дома ~21:40)
+      const dinner = base.find((it) => it.mealId === 'dinner');
+      if (dinner) { dinner.time = '22:00'; dinner.subtitle = 'после вечерней пары'; }
     }
     return base.sort((a, b) => toMin(a.time) - toMin(b.time));
   }

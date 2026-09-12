@@ -60,13 +60,18 @@ window.SCHEDULE = {
     { time: "08:00", title: "Завтрак", kind: "food", mealId: "breakfast" },
     { time: "09:10", title: "Выход", kind: "out" },
     { time: "10:10", title: "Пары", endTime: "13:40", kind: "study" },
-    { time: "14:40", title: "Дома", kind: "home" }
+    { time: "14:40", title: "Дома", kind: "home" },
+    // новые пункты — в конец списка, чтобы не сдвигать id старых отметок (сортировка по времени автоматическая)
+    { time: "14:00", title: "Обед", kind: "food", mealId: "lunch" },
+    { time: "20:00", title: "Ужин", kind: "food", mealId: "dinner" }
   ],
   sunday: [
     { time: "09:00", title: "Подъём", kind: "wake" },
     { time: "09:30", title: "Завтрак", kind: "food", mealId: "breakfast" },
     { time: "11:00", title: "Тренировка: ягодицы", endTime: "12:00", workoutId: "sunday_glutes", kind: "workout" },
-    { time: "12:00", title: "Свободный день", kind: "free" }
+    { time: "12:00", title: "Свободный день", kind: "free" },
+    { time: "14:00", title: "Обед", kind: "food", mealId: "lunch" },
+    { time: "20:00", title: "Ужин", kind: "food", mealId: "dinner" }
   ]
 };
 
