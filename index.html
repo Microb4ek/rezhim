@@ -101,6 +101,23 @@
       </div>
     </section>
 
+    <!-- Личное фото в рамке. Файл хранится в IndexedDB на устройстве и никуда не отправляется. -->
+    <section class="photo" aria-label="Фото">
+      <div class="photo-wrap" id="photoWrap">
+        <button class="photo-empty" id="photoEmpty">
+          <span class="photo-empty-icon">
+            <svg viewBox="0 0 24 24" width="26" height="26"><path fill="currentColor" d="M9 3 7.2 5H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9Zm3 5.2c.9 0 1.6.7 1.6 1.5 0 1.5-2.3 3.2-3.1 3.8-.8-.6-3.1-2.3-3.1-3.8 0-.8.7-1.5 1.6-1.5.6 0 1.2.3 1.5.8.3-.5.9-.8 1.5-.8Z"/></svg>
+          </span>
+          <span class="photo-empty-title">Добавить фото</span>
+          <span class="photo-empty-sub">Хранится только на этом телефоне</span>
+        </button>
+        <button class="photo-frame" id="photoFrame" hidden aria-label="Настроить фото и рамку">
+          <img id="photoImg" alt="Моё фото">
+        </button>
+      </div>
+      <input type="file" id="photoInput" accept="image/*" hidden>
+    </section>
+
     <p class="privacy-note">Все данные хранятся только на этом устройстве. Ничего никуда не отправляется.</p>
   </main>
 </div>
@@ -221,6 +238,38 @@
     </header>
     <div class="lace"></div>
     <div class="sheet-body" id="recipeBody"></div>
+  </div>
+</div>
+
+<!-- Экран фото и рамки -->
+<div class="sheet" id="sheetPhoto" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="sheet-panel">
+    <div class="grabber-zone"><svg class="bow" viewBox="0 0 48 26" aria-hidden="true"><path fill="currentColor" d="M24 13c-4-8-14-11-18-7-3 3 0 9 6 11 5 2 10 0 12-4Zm0 0c4-8 14-11 18-7 3 3 0 9-6 11-5 2-10 0-12-4Z"/><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" d="M20 14l-5 10m13-10l5 10"/><circle cx="24" cy="13" r="3.6" fill="#fff" stroke="currentColor" stroke-width="1.5"/></svg></div>
+    <header class="sheet-head">
+      <div class="sheet-titles">
+        <div class="sheet-eyebrow" style="text-transform:none">Моё фото</div>
+        <h2 class="sheet-title">Рамка</h2>
+      </div>
+      <button class="close-btn" data-close aria-label="Закрыть">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </header>
+    <div class="lace"></div>
+    <div class="sheet-body">
+      <div class="frame-grid" id="frameGrid" role="radiogroup" aria-label="Выбор рамки"></div>
+      <div class="group-label">Фото</div>
+      <div class="group">
+        <button class="row row-btn" id="photoReplace">
+          <span class="row-title">Заменить фото</span>
+          <span class="row-sub">Выбрать из галереи или снять</span>
+        </button>
+        <button class="row row-btn danger" id="photoRemove">
+          <span class="row-title">Удалить фото</span>
+        </button>
+      </div>
+      <p class="footnote">Фото уменьшается и сохраняется в памяти приложения на этом телефоне. Оно не попадает в резервную копию и никуда не отправляется.</p>
+      <div class="sheet-spacer"></div>
+    </div>
   </div>
 </div>
 

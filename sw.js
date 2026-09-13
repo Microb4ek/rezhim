@@ -2,7 +2,7 @@
    и отдаются из кэша. Чтобы выкатить обновление — поменяйте VERSION.
    Никаких внешних запросов приложение не делает. */
 
-const VERSION = 'v1.4.1';
+const VERSION = 'v1.5.0';
 const CACHE = `tracker-${VERSION}`;
 const ASSETS = [
   './',

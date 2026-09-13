@@ -3,7 +3,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '1.4.1';
+  const APP_VERSION = '1.5.0';
   const DAY_KEYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   const WEEKDAYS_RU = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
   const MONTHS_RU = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
@@ -751,6 +751,159 @@
     openSheet(sheetRecipe);
     haptic();
   }
+
+  /* ---------------- фото в рамке ---------------- */
+  // Фото хранится в IndexedDB (localStorage слишком мал для картинок). Никуда не отправляется.
+  const FRAMES = [
+    { id: 'polaroid', name: 'Полароид' },
+    { id: 'lace', name: 'Кружево' },
+    { id: 'hearts', name: 'Сердечки' },
+    { id: 'bow', name: 'Бантик' },
+    { id: 'pearls', name: 'Жемчуг' },
+    { id: 'tape', name: 'Скотч' }
+  ];
+  const photoDb = {
+    open() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open('tracker', 1);
+        req.onupgradeneeded = () => req.result.createObjectStore('kv');
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    },
+    async get(key) {
+      const db = await this.open();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('kv', 'readonly').objectStore('kv').get(key);
+        tx.onsuccess = () => resolve(tx.result ?? null);
+        tx.onerror = () => reject(tx.error);
+      });
+    },
+    async set(key, val) {
+      const db = await this.open();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('kv', 'readwrite');
+        tx.objectStore('kv').put(val, key);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    },
+    async del(key) {
+      const db = await this.open();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('kv', 'readwrite');
+        tx.objectStore('kv').delete(key);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+  };
+
+  const photoFrameEl = $('photoFrame');
+  const photoImgEl = $('photoImg');
+  const photoEmptyEl = $('photoEmpty');
+  const photoInput = $('photoInput');
+  const sheetPhoto = $('sheetPhoto');
+  let photoData = null;
+
+  const currentFrame = () => FRAMES.some((f) => f.id === store.settings.frame) ? store.settings.frame : 'polaroid';
+  function applyFrame() {
+    FRAMES.forEach((f) => photoFrameEl.classList.remove(`frame-${f.id}`));
+    photoFrameEl.classList.add(`frame-${currentFrame()}`);
+  }
+  function renderPhoto() {
+    const has = !!photoData;
+    photoEmptyEl.hidden = has;
+    photoFrameEl.hidden = !has;
+    if (has) { photoImgEl.src = photoData; applyFrame(); }
+    else photoImgEl.removeAttribute('src');
+  }
+  async function loadPhoto() {
+    try { photoData = await photoDb.get('photo'); } catch { photoData = null; }
+    renderPhoto();
+  }
+
+  // уменьшаем до 1400px по длинной стороне и сохраняем как JPEG — так фото занимает ~200–400 КБ
+  async function processPhoto(file) {
+    let source, w, h;
+    if ('createImageBitmap' in window) {
+      source = await createImageBitmap(file); // Safari 15+ сам учитывает поворот из EXIF
+      w = source.width; h = source.height;
+    } else {
+      source = await new Promise((res, rej) => {
+        const img = new Image();
+        img.onload = () => res(img); img.onerror = rej;
+        img.src = URL.createObjectURL(file);
+      });
+      w = source.naturalWidth; h = source.naturalHeight;
+    }
+    const MAX = 1400;
+    const k = Math.min(1, MAX / Math.max(w, h));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(w * k); canvas.height = Math.round(h * k);
+    canvas.getContext('2d').drawImage(source, 0, 0, canvas.width, canvas.height);
+    if (source.close) source.close();
+    return canvas.toDataURL('image/jpeg', 0.86);
+  }
+
+  photoInput.addEventListener('change', async () => {
+    const file = photoInput.files && photoInput.files[0];
+    photoInput.value = '';
+    if (!file) return;
+    toast('Сохраняю фото…', { duration: 4000 });
+    try {
+      const data = await processPhoto(file);
+      await photoDb.set('photo', data);
+      photoData = data;
+      renderPhoto();
+      haptic();
+      toast('Фото сохранено на устройстве');
+      if (!sheetStack.includes(sheetPhoto)) openPhotoSheet();
+    } catch (e) {
+      console.warn('photo', e);
+      toast('Не удалось обработать фото');
+    }
+  });
+  photoEmptyEl.addEventListener('click', () => photoInput.click());
+  photoFrameEl.addEventListener('click', () => openPhotoSheet());
+
+  function renderFrameGrid() {
+    const frag = document.createDocumentFragment();
+    FRAMES.forEach((f) => {
+      const b = document.createElement('button');
+      b.className = 'frame-opt' + (f.id === currentFrame() ? ' selected' : '');
+      b.dataset.frame = f.id;
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', f.id === currentFrame());
+      b.innerHTML = `<span class="photo-frame mini frame-${f.id}"><img alt=""></span><span class="fo-name">${f.name}</span>`;
+      const img = b.querySelector('img');
+      if (photoData) img.src = photoData; else img.remove();
+      frag.appendChild(b);
+    });
+    $('frameGrid').replaceChildren(frag);
+  }
+  function openPhotoSheet() {
+    renderFrameGrid();
+    openSheet(sheetPhoto);
+  }
+  $('frameGrid').addEventListener('click', (e) => {
+    const b = e.target.closest('.frame-opt');
+    if (!b) return;
+    store.settings.frame = b.dataset.frame; saveSettings();
+    $('frameGrid').querySelectorAll('.frame-opt').forEach((x) => { const on = x === b; x.classList.toggle('selected', on); x.setAttribute('aria-checked', on); });
+    applyFrame();
+    haptic();
+  });
+  $('photoReplace').addEventListener('click', () => photoInput.click());
+  $('photoRemove').addEventListener('click', async () => {
+    if (!window.confirm('Удалить фото с устройства?')) return;
+    try { await photoDb.del('photo'); } catch { /* пусто */ }
+    photoData = null;
+    renderPhoto();
+    closeSheet(sheetPhoto);
+    toast('Фото удалено');
+  });
+  loadPhoto();
 
   /* ---------------- настройки ---------------- */
   const sheetSettings = $('sheetSettings');
